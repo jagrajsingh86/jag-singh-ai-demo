@@ -12,10 +12,10 @@ interface TabBarProps {
 export default function TabBar({ activeTab, onTabChange, language }: TabBarProps) {
   const labels = t(language).tabs;
   const TABS: { id: TabId; label: string }[] = [
+    { id: "listing", label: labels.listing },
+    { id: "dashboard", label: labels.dashboard },
     { id: "portfolio", label: labels.portfolio },
     { id: "loadUrl", label: labels.loadUrl },
-    { id: "compare", label: labels.compare },
-    { id: "leadInbox", label: labels.leadInbox },
   ];
   return (
     <nav

@@ -4,7 +4,29 @@ export type PropertySource = "curated" | "url" | "manual";
 
 export type Language = "en" | "zh" | "hi";
 
-export type TabId = "portfolio" | "loadUrl" | "compare" | "leadInbox";
+export type TabId = "listing" | "dashboard" | "portfolio" | "loadUrl";
+
+export interface QuestionLog {
+  id: string;
+  propertyId: string;
+  propertyAddress: string;
+  question: string;
+  category: string;
+  timestamp: string;
+}
+
+export interface ConversionMetrics {
+  totalEnquiries: number;
+  leadsCapured: number;
+  inspectionsBooked: number;
+  conversionRate: number;
+}
+
+export interface QuestionTrend {
+  category: string;
+  count: number;
+  percentage: number;
+}
 
 export interface ChatMessage {
   role: "user" | "assistant";

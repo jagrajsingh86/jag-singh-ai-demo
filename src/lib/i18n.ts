@@ -1,7 +1,7 @@
 import type { Language } from "@/lib/types";
 
 export interface I18nBundle {
-  tabs: { portfolio: string; loadUrl: string; compare: string; leadInbox: string };
+  tabs: { listing: string; dashboard: string; portfolio: string; loadUrl: string };
   header: { tagline: string; live: string };
   portfolio: { title: string; subtitle: string };
   chat: {
@@ -40,7 +40,7 @@ export interface I18nBundle {
 }
 
 const en: I18nBundle = {
-  tabs: { portfolio: "Portfolio", loadUrl: "Load from URL", compare: "Compare", leadInbox: "Lead Inbox" },
+  tabs: { listing: "Listing Page", dashboard: "Agency Dashboard", portfolio: "All Properties", loadUrl: "Load from URL" },
   header: { tagline: "PRIVATE REAL ESTATE INTELLIGENCE", live: "LIVE" },
   portfolio: {
     title: "Property Portfolio",
@@ -96,7 +96,7 @@ const en: I18nBundle = {
 };
 
 const zh: I18nBundle = {
-  tabs: { portfolio: "房源组合", loadUrl: "从链接加载", compare: "对比", leadInbox: "潜在客户" },
+  tabs: { listing: "房源页面", dashboard: "中介后台", portfolio: "全部房源", loadUrl: "从链接加载" },
   header: { tagline: "私有房地产智能", live: "在线" },
   portfolio: {
     title: "房源组合",
@@ -139,7 +139,7 @@ const zh: I18nBundle = {
 };
 
 const hi: I18nBundle = {
-  tabs: { portfolio: "पोर्टफ़ोलियो", loadUrl: "URL से लोड करें", compare: "तुलना", leadInbox: "लीड इनबॉक्स" },
+  tabs: { listing: "लिस्टिंग पेज", dashboard: "एजेंसी डैशबोर्ड", portfolio: "सभी प्रॉपर्टीज़", loadUrl: "URL से लोड करें" },
   header: { tagline: "प्राइवेट रियल एस्टेट इंटेलिजेंस", live: "लाइव" },
   portfolio: {
     title: "प्रॉपर्टी पोर्टफ़ोलियो",

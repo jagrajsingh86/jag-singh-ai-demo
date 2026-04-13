@@ -2,10 +2,15 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "Next.js Dev Server",
+      "name": "Demo Dev Server",
       "runtimeExecutable": "/usr/local/bin/node",
-      "runtimeArgs": ["node_modules/.bin/next", "dev"],
-      "port": 3000,
+      "runtimeArgs": [
+        "/Users/jagraj-ai/Documents/Website Dev/jag-singh-ai-demo/node_modules/.bin/next",
+        "dev",
+        "--port",
+        "3001"
+      ],
+      "port": 3001,
       "autoPort": true
     }
   ]

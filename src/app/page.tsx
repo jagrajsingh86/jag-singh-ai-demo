@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import ChatWidget from "@/components/ChatWidget";
 import TabBar from "@/components/TabBar";
 import PropertyGrid from "@/components/PropertyGrid";
-import LeadInbox from "@/components/LeadInbox";
 import LoadUrlPanel from "@/components/LoadUrlPanel";
-import ComparePanel from "@/components/ComparePanel";
+import ListingPage from "@/components/ListingPage";
+import AgencyDashboard from "@/components/AgencyDashboard";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ChatWidget from "@/components/ChatWidget";
 import { CURATED_PROPERTIES } from "@/data/properties";
 import { t } from "@/lib/i18n";
 import type { ChatMessage, Language, Property, TabId } from "@/lib/types";
 
+const DEFAULT_PROPERTY_ID = "42-ironbark-ridge-rouse-hill";
+
 export default function Home() {
   const [language, setLanguage] = useState<Language>("en");
-  const [activeTab, setActiveTab] = useState<TabId>("portfolio");
+  const [activeTab, setActiveTab] = useState<TabId>("listing");
   const [runtimeProperties, setRuntimeProperties] = useState<Property[]>([]);
   const [activePropertyId, setActivePropertyId] = useState<string | null>(null);
   const [messagesByProperty, setMessagesByProperty] = useState<
@@ -23,8 +25,6 @@ export default function Home() {
   const [leadCapturedByProperty, setLeadCapturedByProperty] = useState<
     Record<string, boolean>
   >({});
-
-  const strings = t(language);
 
   const allProperties = useMemo<Property[]>(
     () => [...CURATED_PROPERTIES, ...runtimeProperties],
@@ -36,20 +36,25 @@ export default function Home() {
     [allProperties]
   );
 
+  const defaultProperty = CURATED_PROPERTIES.find((p) => p.id === DEFAULT_PROPERTY_ID)!;
+
   const ensureMessagesForProperty = useCallback(
     (id: string, address: string) => {
       setMessagesByProperty((prev) => {
         if (prev[id]) return prev;
         return {
           ...prev,
-          [id]: [
-            { role: "assistant", content: t(language).chat.welcome(address) },
-          ],
+          [id]: [{ role: "assistant", content: t(language).chat.welcome(address) }],
         };
       });
     },
     [language]
   );
+
+  // Ensure the default listing property has messages
+  if (!messagesByProperty[DEFAULT_PROPERTY_ID]) {
+    ensureMessagesForProperty(DEFAULT_PROPERTY_ID, defaultProperty.address);
+  }
 
   const openPropertyChat = useCallback(
     (id: string) => {
@@ -98,18 +103,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col">
       {/* Header */}
-      <header className="border-b border-white/[0.06] bg-slate-950/90 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-white/[0.06] bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 flex-shrink-0">
-              <span className="text-slate-900 font-bold text-sm">JS</span>
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#d97706] to-amber-600 flex items-center justify-center shadow-lg shadow-[#d97706]/20 flex-shrink-0">
+              <span className="text-slate-900 font-bold text-sm">S</span>
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-white tracking-tight truncate">
-                Jag Singh AI
+              <div className="text-sm font-bold text-white tracking-tight truncate">
+                SENTINEL
               </div>
-              <div className="text-[11px] text-slate-500 tracking-wide truncate">
-                {strings.header.tagline}
+              <div className="text-[10px] text-slate-500 tracking-widest uppercase truncate">
+                by Jag Singh AI
               </div>
             </div>
           </div>
@@ -121,7 +126,7 @@ export default function Home() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
               <span className="text-[11px] text-emerald-400/80 font-medium">
-                {strings.header.live}
+                LIVE
               </span>
             </div>
           </div>
@@ -130,7 +135,23 @@ export default function Home() {
 
       <TabBar activeTab={activeTab} onTabChange={handleTabChange} language={language} />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto flex flex-col min-h-0">
+      <main className="flex-1 flex flex-col">
+        {/* Tab: Listing Page — The buyer experience */}
+        {activeTab === "listing" && (
+          <ListingPage
+            property={defaultProperty}
+            language={language}
+            messages={messagesByProperty[DEFAULT_PROPERTY_ID] ?? []}
+            onMessagesChange={updateMessages(DEFAULT_PROPERTY_ID)}
+            leadCaptured={leadCapturedByProperty[DEFAULT_PROPERTY_ID] ?? false}
+            onLeadCaptured={markLeadCaptured(DEFAULT_PROPERTY_ID)}
+          />
+        )}
+
+        {/* Tab: Agency Dashboard */}
+        {activeTab === "dashboard" && <AgencyDashboard />}
+
+        {/* Tab: Portfolio */}
         {activeTab === "portfolio" && (
           <PortfolioPanel
             properties={allProperties}
@@ -138,36 +159,23 @@ export default function Home() {
             onSelect={openPropertyChat}
             onBack={() => setActivePropertyId(null)}
             language={language}
-            messages={
-              activePropertyId ? messagesByProperty[activePropertyId] ?? [] : []
-            }
-            onMessagesChange={
-              activePropertyId ? updateMessages(activePropertyId) : () => {}
-            }
-            leadCaptured={
-              activePropertyId
-                ? leadCapturedByProperty[activePropertyId] ?? false
-                : false
-            }
-            onLeadCaptured={
-              activePropertyId ? markLeadCaptured(activePropertyId) : () => {}
-            }
+            messages={activePropertyId ? messagesByProperty[activePropertyId] ?? [] : []}
+            onMessagesChange={activePropertyId ? updateMessages(activePropertyId) : () => {}}
+            leadCaptured={activePropertyId ? leadCapturedByProperty[activePropertyId] ?? false : false}
+            onLeadCaptured={activePropertyId ? markLeadCaptured(activePropertyId) : () => {}}
           />
         )}
 
-        {activeTab === "loadUrl" && (
-          <LoadUrlPanel onPropertyReady={addRuntimeProperty} />
-        )}
-
-        {activeTab === "compare" && (
-          <ComparePanel properties={allProperties} language={language} />
-        )}
-
-        {activeTab === "leadInbox" && <LeadInbox language={language} />}
+        {/* Tab: Load from URL */}
+        {activeTab === "loadUrl" && <LoadUrlPanel onPropertyReady={addRuntimeProperty} />}
       </main>
     </div>
   );
 }
+
+// ────────────────────────────────────────────────────────────
+// Portfolio — grid or per-property chat
+// ────────────────────────────────────────────────────────────
 
 interface PortfolioPanelProps {
   properties: Property[];
@@ -196,7 +204,7 @@ function PortfolioPanel({
 
   if (!activeProperty) {
     return (
-      <div className="px-4 sm:px-6 py-6">
+      <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto w-full">
         <div className="mb-5">
           <h2 className="text-white text-lg font-semibold tracking-tight">
             {strings.portfolio.title}
@@ -209,26 +217,13 @@ function PortfolioPanel({
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 max-w-5xl mx-auto w-full">
       <div className="border-b border-white/[0.04] bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+        <div className="px-4 sm:px-6 py-4">
           <button
             onClick={onBack}
-            className="text-[12px] text-slate-400 hover:text-amber-300 mb-2 inline-flex items-center gap-1 transition-colors"
+            className="text-[12px] text-slate-400 hover:text-[#d97706] mb-2 inline-flex items-center gap-1 transition-colors"
           >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
             ← {strings.tabs.portfolio}
           </button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -236,17 +231,12 @@ function PortfolioPanel({
               <h1 className="text-white font-semibold text-base sm:text-lg tracking-tight">
                 {activeProperty.address}
               </h1>
-              <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
-                {activeProperty.headline}
-              </p>
+              <p className="text-slate-400 text-xs sm:text-sm mt-0.5">{activeProperty.headline}</p>
             </div>
             <div className="flex items-center gap-4 text-xs text-slate-400">
               <span>{activeProperty.bedrooms} Bed</span>
               <span>{activeProperty.bathrooms} Bath</span>
               <span>{activeProperty.carSpaces} Car</span>
-              {activeProperty.landSize && (
-                <span className="hidden sm:inline">{activeProperty.landSize}</span>
-              )}
             </div>
           </div>
         </div>
